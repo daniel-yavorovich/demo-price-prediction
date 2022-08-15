@@ -7,17 +7,19 @@ from influxdb_client import InfluxDBClient, Point
 from settings import INFLUXDB_TOKEN, INFLUXDB_ORG, INFLUXDB_URL, INFLUXDB_BUCKET, BINANCE_PAIR, FORECAST_HORIZON
 
 
-def get_history_data(query_api, symbol="OGNBTC", time_type="close", field="price_avg", source="Binance"):
+def get_history_data(query_api, symbol="OGNBTC", time_type="close", field="price_avg", source="Binance",
+                     range_start='-30d'):
     results = []
 
     query = 'from(bucket:"{bucket}") ' \
-            '|> range(start:-48h) ' \
+            '|> range(start:{range_start}) ' \
             '|> filter(fn: (r) => r["_measurement"] == "price") ' \
             '|> filter(fn: (r) => r["symbol"] == "{symbol}") ' \
             '|> filter(fn: (r) => r["source"] == "{source}") ' \
             '|> filter(fn: (r) => r["time_type"] == "{time_type}")' \
             '|> filter(fn: (r) => r["_field"] == "{field}")' \
-            '|> yield(name: "mean")'.format(bucket=INFLUXDB_BUCKET, symbol=symbol, source=source, time_type=time_type,
+            '|> yield(name: "mean")'.format(bucket=INFLUXDB_BUCKET, range_start=range_start, symbol=symbol,
+                                            source=source, time_type=time_type,
                                             field=field)
 
     for table in query_api.query(org=INFLUXDB_ORG, query=query):
