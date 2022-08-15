@@ -29,7 +29,7 @@ def get_history_data(query_api, symbol="OGNBTC", time_type="close", field="price
     return results
 
 
-def forecast(m, symbol="OGNBTC", time_type="close", field="price_avg", FORECAST_HORIZON=10, freq='min'):
+def forecast(m, symbol="OGNBTC", time_type="close", field="price_avg", periods=10, freq='min'):
     # Load historical data by API
     data = get_history_data(query_api, symbol, time_type, field)
 
@@ -41,7 +41,7 @@ def forecast(m, symbol="OGNBTC", time_type="close", field="price_avg", FORECAST_
     m.fit(df)
 
     # Create dates to predict
-    future_frame = m.make_future_dataframe(periods=FORECAST_HORIZON, freq=freq, include_history=False)
+    future_frame = m.make_future_dataframe(periods=periods, freq=freq, include_history=False)
 
     # Make predict
     forecasts = m.predict(future_frame)
@@ -62,7 +62,7 @@ def run():
             m = Prophet(**params)
             m.stan_backend.logger = None
 
-            forecasts = forecast(m, time_type=time_type, field=field, FORECAST_HORIZON=FORECAST_HORIZON)
+            forecasts = forecast(m, time_type=time_type, field=field, periods=FORECAST_HORIZON)
             record['time'] = forecasts.ds[FORECAST_HORIZON - 1]
             record['time_type'] = time_type
 
