@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 
 
 def check_env(key):
@@ -15,8 +16,10 @@ BINANCE_SAVER_ITERATION_LIMIT = int(os.environ.get('BINANCE_SAVER_ITERATION_LIMI
 
 BINANCE_PAIR = os.environ.get('BINANCE_PAIR', 'OGNBTC')
 BINANCE_CHART_INTERVAL = os.environ.get('BINANCE_CHART_INTERVAL', '1m')
+BINANCE_CHART_START_DATE = datetime(year=2021, month=3, day=1)
 
 FORECAST_HORIZON = int(os.environ.get('FORECAST_HORIZON', '60'))
+
 
 check_env('INFLUXDB_TOKEN')
 check_env('INFLUXDB_ORG')

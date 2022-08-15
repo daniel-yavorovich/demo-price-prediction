@@ -13,6 +13,11 @@ from settings import INFLUXDB_URL, INFLUXDB_TOKEN, INFLUXDB_ORG, INFLUXDB_BUCKET
 def fill_database(symbol=BINANCE_PAIR, interval=BINANCE_CHART_INTERVAL, limit=BINANCE_SAVER_ITERATION_LIMIT):
     for i in client.klines(symbol, interval, limit=limit):
         for time_type in ["open", "close"]:
+            if time_type == "open":
+                t = datetime.fromtimestamp(int(i[0]) / 1000.0)
+            else:
+                t = datetime.fromtimestamp(int(i[6]) / 1000.0)
+
             write_api.write(INFLUXDB_BUCKET, INFLUXDB_ORG, Point("price")
                             .tag("time_type", time_type)
                             .tag("symbol", BINANCE_PAIR)
@@ -22,7 +27,7 @@ def fill_database(symbol=BINANCE_PAIR, interval=BINANCE_CHART_INTERVAL, limit=BI
                             .field("price_low", float(i[3]))
                             .field("price_close", float(i[4]))
                             .field("price_avg", ((float(i[2]) + float(i[3])) / 2.0))
-                            .time(datetime.fromtimestamp(int(i[0]) / 1000.0)))
+                            .time(t))
 
 
 if __name__ == '__main__':

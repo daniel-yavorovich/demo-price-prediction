@@ -8,7 +8,7 @@ from settings import INFLUXDB_TOKEN, INFLUXDB_ORG, INFLUXDB_URL, INFLUXDB_BUCKET
 
 
 def get_history_data(query_api, symbol="OGNBTC", time_type="close", field="price_avg", source="Binance",
-                     range_start='-30d'):
+                     range_start='-7d'):
     results = []
 
     query = 'from(bucket:"{bucket}") ' \
@@ -31,7 +31,7 @@ def get_history_data(query_api, symbol="OGNBTC", time_type="close", field="price
 
 def forecast(m, symbol="OGNBTC", time_type="close", field="price_avg", periods=10, freq='min'):
     # Load historical data by API
-    data = get_history_data(query_api, symbol, time_type, field)
+    data = get_history_data(query_api, symbol, time_type, field, range_start='-1h')
 
     df = pd.DataFrame.from_dict(data)
     df.columns = ['ds', 'y']
@@ -52,7 +52,7 @@ def forecast(m, symbol="OGNBTC", time_type="close", field="price_avg", periods=1
 def run():
     # Init Prophet
     # params = {'changepoint_prior_scale': 0.001, 'seasonality_prior_scale': 0.01}
-    params = {'changepoint_prior_scale': 1, 'seasonality_prior_scale': 0.0001}
+    params = {}
 
     record = {
         'symbol': BINANCE_PAIR
@@ -70,17 +70,17 @@ def run():
             value = forecasts.yhat[FORECAST_HORIZON - 1]
             record[field] = value
 
-    write_api.write(INFLUXDB_BUCKET, INFLUXDB_ORG, Point("price")
-                    .tag("time_type", time_type)
-                    .tag("symbol", BINANCE_PAIR)
-                    .tag("source", "AI")
-                    .field("price_open", record['price_open'])
-                    .field("price_high", record['price_high'])
-                    .field("price_low", record['price_low'])
-                    .field("price_close", record['price_close'])
-                    .field("price_avg", record['price_avg'])
-                    .time(record['time']))
-    print(record)
+        write_api.write(INFLUXDB_BUCKET, INFLUXDB_ORG, Point("price")
+                        .tag("time_type", time_type)
+                        .tag("symbol", BINANCE_PAIR)
+                        .tag("source", "AI")
+                        .field("price_open", record['price_open'])
+                        .field("price_high", record['price_high'])
+                        .field("price_low", record['price_low'])
+                        .field("price_close", record['price_close'])
+                        .field("price_avg", record['price_avg'])
+                        .time(record['time']))
+        print(record)
     # m.plot(forecasts, include_legend=True)
     # plt.show()
 
